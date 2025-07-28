@@ -45,6 +45,20 @@ export const validateAuthMethod = (authMethod: string): string | null => {
     return null;
   }
 
+  if (authMethod === AuthType.USE_OLLAMA) {
+    // Ollama doesn't require API key, just check if user wants to override default URL
+    const baseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
+    console.log(`Using Ollama server at: ${baseUrl}`);
+    return null;
+  }
+
+  if (authMethod === AuthType.USE_LM_STUDIO) {
+    // LM Studio doesn't require API key, just check if user wants to override default URL
+    const baseUrl = process.env.LM_STUDIO_BASE_URL || 'http://localhost:1234';
+    console.log(`Using LM Studio server at: ${baseUrl}`);
+    return null;
+  }
+
   return 'Invalid auth method selected.';
 };
 

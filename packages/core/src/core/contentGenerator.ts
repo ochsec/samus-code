@@ -44,11 +44,14 @@ export enum AuthType {
   USE_VERTEX_AI = 'vertex-ai',
   CLOUD_SHELL = 'cloud-shell',
   USE_OPENAI = 'openai',
+  USE_OLLAMA = 'ollama',
+  USE_LM_STUDIO = 'lm-studio',
 }
 
 export type ContentGeneratorConfig = {
   model: string;
   apiKey?: string;
+  baseUrl?: string;
   vertexai?: boolean;
   authType?: AuthType | undefined;
   enableOpenAILogging?: boolean;
@@ -117,8 +120,33 @@ export async function createContentGeneratorConfig(
   if (authType === AuthType.USE_OPENAI && openaiApiKey) {
     contentGeneratorConfig.apiKey = openaiApiKey;
     contentGeneratorConfig.model = process.env.OPENAI_MODEL || '';
+    contentGeneratorConfig.baseUrl = process.env.OPENAI_BASE_URL;
 
     return contentGeneratorConfig;
+  }
+
+  if (authType === AuthType.USE_OLLAMA) {
+    const ollamaBaseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
+    const ollamaModel = process.env.OLLAMA_MODEL || model || 'llama3';
+    
+    return {
+      model: ollamaModel,
+      apiKey: 'not-required',
+      baseUrl: ollamaBaseUrl,
+      authType,
+    };
+  }
+
+  if (authType === AuthType.USE_LM_STUDIO) {
+    const lmStudioBaseUrl = process.env.LM_STUDIO_BASE_URL || 'http://localhost:1234';
+    const lmStudioModel = process.env.LM_STUDIO_MODEL || model || 'local-model';
+    
+    return {
+      model: lmStudioModel,
+      apiKey: 'not-required',
+      baseUrl: lmStudioBaseUrl,
+      authType,
+    };
   }
 
   return contentGeneratorConfig;
@@ -172,6 +200,52 @@ export async function createContentGenerator(
 
     // Always use OpenAIContentGenerator, logging is controlled by enableOpenAILogging flag
     return new OpenAIContentGenerator(config.apiKey, config.model, gcConfig);
+  }
+
+  if (config.authType === AuthType.USE_OLLAMA) {
+    const { OllamaContentGenerator } = await import(
+      './ollamaContentGenerator.js'
+    );
+    
+    if (!config.baseUrl) {
+      throw new Error('Ollama base URL is required');
+    }
+    
+    const generator = new OllamaContentGenerator(config.baseUrl, config.model, gcConfig);
+    
+    // Check if server is running
+    const isHealthy = await generator.healthCheck();
+    if (!isHealthy) {
+      throw new Error(
+        `Cannot connect to Ollama server at ${config.baseUrl}. ` +
+        'Please ensure Ollama is running with "ollama serve"'
+      );
+    }
+    
+    return generator;
+  }
+
+  if (config.authType === AuthType.USE_LM_STUDIO) {
+    const { LMStudioContentGenerator } = await import(
+      './lmStudioContentGenerator.js'
+    );
+    
+    if (!config.baseUrl) {
+      throw new Error('LM Studio base URL is required');
+    }
+    
+    const generator = new LMStudioContentGenerator(config.baseUrl, config.model, gcConfig);
+    
+    // Check if server is running
+    const isHealthy = await generator.healthCheck();
+    if (!isHealthy) {
+      throw new Error(
+        `Cannot connect to LM Studio server at ${config.baseUrl}. ` +
+        'Please ensure LM Studio server is running'
+      );
+    }
+    
+    return generator;
   }
 
   throw new Error(

@@ -9,7 +9,7 @@ import { Box, Text, useInput } from 'ink';
 import { Colors } from '../colors.js';
 import { RadioButtonSelect } from './shared/RadioButtonSelect.js';
 import { LoadedSettings, SettingScope } from '../../config/settings.js';
-import { AuthType } from '@qwen-code/qwen-code-core';
+import { AuthType } from '@samus-code/samus-code-core';
 import {
   validateAuthMethod,
   setOpenAIApiKey,
@@ -45,7 +45,11 @@ export function AuthDialog({
     initialErrorMessage || null,
   );
   const [showOpenAIKeyPrompt, setShowOpenAIKeyPrompt] = useState(false);
-  const items = [{ label: 'OpenAI', value: AuthType.USE_OPENAI }];
+  const items = [
+    { label: 'OpenAI', value: AuthType.USE_OPENAI },
+    { label: 'Ollama (Local)', value: AuthType.USE_OLLAMA },
+    { label: 'LM Studio (Local)', value: AuthType.USE_LM_STUDIO },
+  ];
 
   const initialAuthIndex = Math.max(
     0,
