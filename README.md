@@ -36,7 +36,46 @@ samus
 ```
 
 ### API Configuration
-TODO
+
+The tool supports multiple authentication methods and local LLM servers. Below are the configurations for each:
+
+#### **1. Local LLM Servers (Ollama / LM Studio)**
+Both servers provide OpenAI-compatible APIs and require no API key. Configure them via environment variables or code.
+
+---
+
+#### **Ollama**
+- **Base URL**: Default is `http://localhost:11434`.  
+- **Model**: Default is `llama3`.  
+- **Environment Variables**:
+  ```bash
+  export OLLAMA_BASE_URL="http://localhost:11434"
+  export OLLAMA_MODEL="llama3"
+  ```
+- **Prerequisites**:
+  - Run the Ollama server: `ollama serve`.
+  - Verify server health: The code checks `/<baseUrl>/api/tags`.
+
+---
+
+#### **LM Studio**
+- **Base URL**: Default is `http://localhost:1234`.  
+- **Model**: Default is `local-model`.  
+- **Environment Variables**:
+  ```bash
+  export LM_STUDIO_BASE_URL="http://localhost:1234"
+  export LM_STUDIO_MODEL="local-model"
+  ```
+- **Prerequisites**:
+  - Ensure the LM Studio server is running.
+  - Verify server health: The code checks `/<baseUrl>/v1/models`.
+
+---
+
+#### **Key Notes**
+- **No API Key Required**: Both servers use `apiKey: 'not-required'` in the config.
+- **OpenAI Compatibility**: The base URL is adjusted to point to the server's OpenAI-compatible endpoint.
+- **Model Listing**: Use `listModels()` to fetch available models from the local server.
 
 ## Usage Examples
 
