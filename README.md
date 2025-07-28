@@ -22,11 +22,18 @@ curl -qL https://www.npmjs.com/install.sh | sh
 
 ### Installation
 
+#### Option 1: Install from npm (Recommended)
+```bash
+npm install -g samus-code
+```
+
+#### Option 2: Build from source
 ```bash
 git clone https://github.com/ochsec/samus-code.git
 cd samus-code
 npm install
-npm install -g .
+npm run build
+npm install -g ./packages/cli
 ```
 
 Then run from anywhere:
@@ -76,6 +83,23 @@ Both servers provide OpenAI-compatible APIs and require no API key. Configure th
 - **No API Key Required**: Both servers use `apiKey: 'not-required'` in the config.
 - **OpenAI Compatibility**: The base URL is adjusted to point to the server's OpenAI-compatible endpoint.
 - **Model Listing**: Use `listModels()` to fetch available models from the local server.
+
+#### **OPENAI-Compatible APIs**
+Currently, the application supports OpenAI-compatible APIs using the following environment variables:
+
+```bash
+# OpenAI API Configuration
+export OPENAI_API_KEY="your_openai_api_key"
+export OPENAI_BASE_URL="https://api.openai.com/v1"
+export OPENAI_MODEL="gpt-4o"
+```
+
+**Notes**:
+- Replace `your_openai_api_key` with your actual OpenAI API key.
+- `OPENAI_BASE_URL` points to the OpenAI API endpoint.
+- `OPENAI_MODEL` specifies the model to use.
+- Ensure you have the necessary permissions and billing setup with OpenAI.
+- Support for other OpenAI-compatible APIs is limited to those that can be configured with these standard OpenAI environment variables.
 
 ## Usage Examples
 
