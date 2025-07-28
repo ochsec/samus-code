@@ -20,14 +20,14 @@ import {
   Config,
   Config as ActualConfigType,
   ApprovalMode,
-} from '@qwen-code/qwen-code-core';
+} from '@samus-code/samus-code-core';
 import { useInput, type Key as InkKey } from 'ink';
 
 vi.mock('ink');
 
-vi.mock('@qwen-code/qwen-code-core', async () => {
+vi.mock('@samus-code/samus-code-core', async () => {
   const actualServerModule = (await vi.importActual(
-    '@qwen-code/qwen-code-core',
+    '@samus-code/samus-code-core',
   )) as Record<string, unknown>;
   return {
     ...actualServerModule,

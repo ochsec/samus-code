@@ -1,6 +1,6 @@
 # Adding Local LLM Providers (Ollama & LM Studio)
 
-This guide explains how to add support for local LLM servers like Ollama and LM Studio to the Qwen Code core package.
+This guide explains how to add support for local LLM servers like Ollama and LM Studio to the Samus Code core package.
 
 ## Overview
 
@@ -215,7 +215,7 @@ export OLLAMA_BASE_URL="http://localhost:11434"
 export OLLAMA_MODEL="llama3"
 
 # Run with Ollama
-qwen-code --auth ollama
+samus-code --auth ollama
 ```
 
 ### Using LM Studio
@@ -228,7 +228,7 @@ export LM_STUDIO_BASE_URL="http://localhost:1234"
 export LM_STUDIO_MODEL="TheBloke/Mistral-7B-Instruct-v0.2-GGUF"
 
 # Run with LM Studio
-qwen-code --auth lm-studio
+samus-code --auth lm-studio
 ```
 
 ## Benefits of This Approach

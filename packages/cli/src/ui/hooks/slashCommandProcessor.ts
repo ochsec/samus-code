@@ -18,7 +18,7 @@ import {
   MCPServerStatus,
   getMCPDiscoveryState,
   getMCPServerStatus,
-} from '@qwen-code/qwen-code-core';
+} from '@samus-code/samus-code-core';
 import { useSessionStats } from '../contexts/SessionContext.js';
 import {
   Message,

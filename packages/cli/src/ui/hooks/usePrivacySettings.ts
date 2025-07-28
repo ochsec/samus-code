@@ -10,7 +10,7 @@ import {
   Config,
   CodeAssistServer,
   UserTierId,
-} from '@qwen-code/qwen-code-core';
+} from '@samus-code/samus-code-core';
 
 export interface PrivacyState {
   isLoading: boolean;
