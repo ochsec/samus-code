@@ -109,14 +109,55 @@ export interface ModelConfig {
 }
 ```
 
-### 1.4 Model Switching Service
+### 1.4 Task Evaluation Service
+
+```ts
+// packages/core/src/core/taskEvaluationService.ts
+export class TaskEvaluationService {
+  async evaluateTaskType(
+    userPrompt: string,
+    conversationHistory: Message[],
+    evaluatorModel: ContentGenerator
+  ): Promise<TaskType> {
+    const evaluationPrompt = `
+      Given the following user request and conversation history, classify the task type.
+      
+      Task Types:
+      - EXPLORATION: Understanding codebase structure, finding files, discovering patterns
+      - PLANNING: Designing features, architectural decisions, breaking down complex tasks
+      - TROUBLESHOOTING: Debugging, fixing errors, investigating issues
+      - IMPLEMENTATION: Writing code, making edits, executing planned changes
+      
+      User Request: "${userPrompt}"
+      
+      Respond with only the task type, nothing else.
+    `;
+    
+    const response = await evaluatorModel.generate({
+      messages: [
+        ...conversationHistory.slice(-5), // Last 5 messages for context
+        { role: 'user', content: evaluationPrompt }
+      ],
+      temperature: 0.1 // Low temperature for consistent classification
+    });
+    
+    const taskType = response.content.trim().toUpperCase();
+    return TaskType[taskType as keyof typeof TaskType] || TaskType.IMPLEMENTATION;
+  }
+}
+```
+
+### 1.5 Model Switching Service
 
 ```ts
 // packages/core/src/core/modelSwitchingService.ts
 export class ModelSwitchingService {
   private modelConfigs: Map<AuthType, ModelConfig> = new Map();
+  private taskEvaluator: TaskEvaluationService;
+  private currentStrength: ModelStrength = ModelStrength.WEAK;
 
-  constructor() {
+  constructor(taskEvaluator: TaskEvaluationService) {
+    this.taskEvaluator = taskEvaluator;
     this.loadModelConfigs();
   }
 
@@ -187,7 +228,59 @@ export class ModelSwitchingService {
     if (!modelConfig) throw new Error(`No model config for provider ${provider}`);
     
     const model = strength === ModelStrength.WEAK ? modelConfig.weak : modelConfig.strong;
+    this.currentStrength = strength;
     await this.switchModel(model, provider, config);
+  }
+
+  async autoSwitchBasedOnTask(
+    userPrompt: string,
+    conversationHistory: Message[],
+    provider: AuthType,
+    config: ContentGeneratorConfig,
+    currentGenerator: ContentGenerator
+  ): Promise<boolean> {
+    // Always use weak model for task evaluation (more efficient)
+    let evaluatorGenerator = currentGenerator;
+    
+    // If we're currently on strong model, temporarily switch to weak for evaluation
+    if (this.currentStrength === ModelStrength.STRONG) {
+      const modelConfig = this.modelConfigs.get(provider);
+      if (!modelConfig) throw new Error(`No model config for provider ${provider}`);
+      
+      evaluatorGenerator = await createContentGenerator(
+        { ...config, model: modelConfig.weak, authType: provider },
+        this.gcConfig
+      );
+    }
+    
+    // Use weak model to evaluate the task
+    const taskType = await this.taskEvaluator.evaluateTaskType(
+      userPrompt,
+      conversationHistory,
+      evaluatorGenerator
+    );
+    
+    const requiredStrength = this.getStrengthForTask(taskType);
+    
+    // Only switch if we need a different strength
+    if (requiredStrength !== this.currentStrength) {
+      await this.switchToStrength(requiredStrength, provider, config);
+      return true; // Switched
+    }
+    
+    return false; // No switch needed
+  }
+
+  private getStrengthForTask(taskType: TaskType): ModelStrength {
+    switch (taskType) {
+      case TaskType.EXPLORATION:
+      case TaskType.PLANNING:
+      case TaskType.TROUBLESHOOTING:
+        return ModelStrength.STRONG;
+      case TaskType.IMPLEMENTATION:
+      default:
+        return ModelStrength.WEAK;
+    }
   }
 }
 ```
@@ -211,9 +304,18 @@ export class ModelSwitchingService {
 > /model strong
 ✓ Switched to strong model: llama3.1:70b (context: 128000 tokens)
 
-# Auto-switching based on task detection
+# Auto-switching based on task detection (weak model evaluates the task)
 > Let me explore your codebase structure...
-✓ Auto-switched to strong model for exploration task
+✓ Task evaluated as: EXPLORATION (by weak model)
+✓ Auto-switched to strong model: llama3.1:70b
+
+# Disable auto-switching
+> /auto-switch off
+✓ Auto-switching disabled
+
+# Enable auto-switching
+> /auto-switch on
+✓ Auto-switching enabled
 ```
 
 ### 2.2 Environment Variables
@@ -246,6 +348,25 @@ export OPENROUTER_MODEL_STRONG="anthropic/claude-3.5-sonnet"
 - **Current model strength** – track whether using weak or strong model
 - **Task context** – maintain understanding of current task type
 
+### 3.1 UI Updates
+
+The CLI already displays the current model in the Footer component (`packages/cli/src/ui/components/Footer.tsx`). When switching models:
+
+```ts
+// Update the model display in Footer
+// The Footer component receives the model prop (line 21, 35)
+// Update this whenever model switches occur
+
+// In the session context or model switching handler:
+setCurrentModel(newModelName);
+
+// Footer will automatically reflect the change:
+<Footer
+  model={currentModel}  // This needs to be updated on switch
+  // ... other props
+/>
+```
+
 ---
 
 ## 4. Compression Strategy
@@ -268,8 +389,11 @@ Reuse the existing `/compress` logic (or call it internally) to shrink the conve
 ## 6. Security & Performance
 
 - **Caching** – store fetched limits keyed by `provider+model`.
-- **Timeouts** – 5 s for discovery calls.
+- **Timeouts** – 5 s for discovery calls, 3 s for task evaluation.
 - **Secrets** – never log API keys; use existing secure storage.
+- **Evaluation Efficiency** – Always use weak model for task evaluation to minimize cost and latency.
+- **Temporary Generator** – Create ephemeral weak model instance only when needed for evaluation.
+- **Fallback** – If task evaluation fails, default to current model strength.
 
 ---
 
@@ -279,7 +403,7 @@ Reuse the existing `/compress` logic (or call it internally) to shrink the conve
 |-------|------|--------------|
 | **Core plumbing** | 2 | `fetchContextLength`, `switchModel`, model strength types |
 | **Weak/Strong support** | 1 | `getModelForTask`, `switchToStrength`, env var loading |
-| **CLI glue** | 1 | `/model` command variants, Ink UI, auto-switching |
+| **CLI glue** | 1 | `/model` command variants, Footer updates, auto-switching |
 | **Testing** | 1 | Unit + integration tests including task detection |
 | **Docs & polish** | 1 | README, examples, migration guide |
 
