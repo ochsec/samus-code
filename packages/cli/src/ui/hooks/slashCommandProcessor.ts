@@ -226,7 +226,7 @@ export const useSlashCommandProcessor = (
         description: 'open full Qwen Code documentation in your browser',
         action: async (_mainCommand, _subCommand, _args) => {
           const docsUrl =
-            'https://github.com/QwenLM/Qwen3-Coder/blob/main/README.md';
+            'https://github.com/ochsec/samus-code/blob/dev/README.md';
           if (process.env.SANDBOX && process.env.SANDBOX !== 'sandbox-exec') {
             addMessage({
               type: MessageType.INFO,

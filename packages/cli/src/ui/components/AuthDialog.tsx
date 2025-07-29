@@ -170,7 +170,7 @@ export function AuthDialog({
       </Box>
       <Box marginTop={1}>
         <Text color={Colors.AccentBlue}>
-          {'https://github.com/QwenLM/Qwen3-Coder/blob/main/README.md'}
+          {'https://github.com/ochsec/samus-code/blob/dev/README.md'}
         </Text>
       </Box>
     </Box>
