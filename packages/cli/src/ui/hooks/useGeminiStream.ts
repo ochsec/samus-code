@@ -592,25 +592,19 @@ export const useGeminiStream = (
             ? queryToSend.map(part => typeof part === 'string' ? part : part.text || '').join(' ')
             : typeof queryToSend === 'string' ? queryToSend : queryToSend.text || '';
           
-          // Get current conversation history - but we need Turn objects, not Content objects
-          // For now we'll pass an empty array since the history conversion is complex
-          const conversationHistory: any[] = []; // TODO: Convert geminiClient.getHistory() to Turn[]
           const currentConfig = config.getContentGeneratorConfig();
           const authType = currentConfig?.authType;
-          const currentGenerator = geminiClient.getContentGenerator();
           
-          if (authType && currentGenerator) {
-            await modelSwitchingService.autoSwitchBasedOnTask(
-              queryText,
-              conversationHistory,
-              authType,
-              currentConfig,
-              currentGenerator
-            );
+          if (authType) {
+            const taskType = await modelSwitchingService.evaluateTaskType(queryText);
+            const recommendedModel = modelSwitchingService.getModelForTask(taskType, authType);
+            
+            if (recommendedModel !== config.getModel()) {
+              config.setModel(recommendedModel);
+            }
           }
         } catch (error) {
           console.warn('Model switching failed:', getErrorMessage(error));
-          // Continue with current model if switching fails
         }
       }
 

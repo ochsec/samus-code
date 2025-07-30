@@ -235,4 +235,43 @@ export class ModelSwitchingService {
   getCurrentChat(): GeminiChat | null {
     return this.currentChat;
   }
+
+  async evaluateTaskType(userPrompt: string): Promise<TaskType> {
+    // Use simple keyword-based classification
+    const prompt = userPrompt.toLowerCase();
+    
+    // Check for exploration keywords
+    if (prompt.includes('understand') || prompt.includes('explore') || prompt.includes('find') || 
+        prompt.includes('discover') || prompt.includes('show me') || prompt.includes('what is') ||
+        prompt.includes('how does') || prompt.includes('explain')) {
+      return TaskType.EXPLORATION;
+    }
+    
+    // Check for planning keywords  
+    if (prompt.includes('plan') || prompt.includes('design') || prompt.includes('architect') ||
+        prompt.includes('approach') || prompt.includes('strategy') || prompt.includes('break down')) {
+      return TaskType.PLANNING;
+    }
+    
+    // Check for troubleshooting keywords
+    if (prompt.includes('debug') || prompt.includes('fix') || prompt.includes('error') ||
+        prompt.includes('issue') || prompt.includes('problem') || prompt.includes('troubleshoot')) {
+      return TaskType.TROUBLESHOOTING;
+    }
+    
+    // Check for review keywords
+    if (prompt.includes('review') || prompt.includes('analyze') || prompt.includes('audit') ||
+        prompt.includes('suggestions') || prompt.includes('improve') || prompt.includes('optimize')) {
+      return TaskType.REVIEW;
+    }
+    
+    // Check for documentation keywords
+    if (prompt.includes('document') || prompt.includes('readme') || prompt.includes('comment') ||
+        prompt.includes('docs') || prompt.includes('api doc')) {
+      return TaskType.DOCUMENTATION;
+    }
+    
+    // Default to implementation
+    return TaskType.IMPLEMENTATION;
+  }
 }

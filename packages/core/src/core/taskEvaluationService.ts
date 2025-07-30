@@ -44,8 +44,11 @@ Respond with only the task type, nothing else.`;
         }
       });
       
-      const taskType = response.text?.trim().toUpperCase() || 'IMPLEMENTATION';
-      return TaskType[taskType as keyof typeof TaskType] || TaskType.IMPLEMENTATION;
+      const responseText = response.text?.trim() || '';
+      const taskType = responseText.toUpperCase();
+      const result = TaskType[taskType as keyof typeof TaskType] || TaskType.IMPLEMENTATION;
+      
+      return result;
     } catch (error) {
       console.warn('Failed to evaluate task type, defaulting to IMPLEMENTATION:', error);
       return TaskType.IMPLEMENTATION;
