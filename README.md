@@ -101,16 +101,12 @@ export OPENAI_BASE_URL="https://api.openai.com/v1"
 # For model switching feature (weak/strong models)
 export OPENAI_MODEL_WEAK="claude-3-5-haiku-20241022"
 export OPENAI_MODEL_STRONG="claude-3-5-sonnet-20241022"
-
-# For OpenRouter specifically
-export OPENROUTER_MODEL_WEAK="anthropic/claude-3-5-haiku"
-export OPENROUTER_MODEL_STRONG="anthropic/claude-3-5-sonnet"
 ```
 
 **Notes**:
 - Replace `your_openai_api_key` with your actual OpenAI API key.
 - `OPENAI_BASE_URL` points to the OpenAI API endpoint.
-- For OpenRouter, use the OpenRouter-specific model identifiers.
+- For OpenRouter, set `OPENAI_BASE_URL` to `https://openrouter.ai/api/v1` and use your OpenRouter API key for `OPENAI_API_KEY`.
 - Ensure you have the necessary permissions and billing setup with OpenAI/OpenRouter.
 - Support for other OpenAI-compatible APIs is limited to those that can be configured with these standard OpenAI environment variables.
 

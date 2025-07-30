@@ -60,11 +60,9 @@ export class ModelSwitchingService {
     
     // OpenRouter uses OpenAI auth type
     this.modelConfigs.set(AuthType.USE_OPENAI, {
-      weak: process.env.OPENROUTER_MODEL_WEAK || 
-            process.env.OPENAI_MODEL_WEAK || 
+      weak: process.env.OPENAI_MODEL_WEAK || 
             'mistralai/Mistral-7B-Instruct-v0.2',
-      strong: process.env.OPENROUTER_MODEL_STRONG || 
-              process.env.OPENAI_MODEL_STRONG || 
+      strong: process.env.OPENAI_MODEL_STRONG || 
               'anthropic/claude-3.5-sonnet'
     });
   }
