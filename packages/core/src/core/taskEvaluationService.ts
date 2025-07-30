@@ -19,8 +19,10 @@ export class TaskEvaluationService {
       
 Task Types:
 - EXPLORATION: Understanding codebase structure, finding files, discovering patterns
-- PLANNING: Designing features, architectural decisions, breaking down complex tasks
+- PLANNING: Designing features, architectural decisions, breaking down complex tasks  
 - TROUBLESHOOTING: Debugging, fixing errors, investigating issues
+- REVIEW: Code review, analysis, security audits, performance evaluation
+- DOCUMENTATION: Writing docs, README files, comments, API documentation
 - IMPLEMENTATION: Writing code, making edits, executing planned changes
 
 User Request: "${userPrompt}"

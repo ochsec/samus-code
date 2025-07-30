@@ -85,9 +85,10 @@ export class ModelSwitchingService {
       case TaskType.EXPLORATION:
       case TaskType.PLANNING:
       case TaskType.TROUBLESHOOTING:
+      case TaskType.REVIEW:
         return config.strong;
+      case TaskType.DOCUMENTATION:
       case TaskType.IMPLEMENTATION:
-        return config.weak;
       default:
         return config.weak;
     }
@@ -220,7 +221,9 @@ export class ModelSwitchingService {
       case TaskType.EXPLORATION:
       case TaskType.PLANNING:
       case TaskType.TROUBLESHOOTING:
+      case TaskType.REVIEW:
         return ModelStrength.STRONG;
+      case TaskType.DOCUMENTATION:
       case TaskType.IMPLEMENTATION:
       default:
         return ModelStrength.WEAK;

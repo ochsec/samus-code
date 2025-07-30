@@ -117,8 +117,8 @@ export OPENROUTER_MODEL_STRONG="anthropic/claude-3-5-sonnet"
 ### Model Switching Feature
 
 Samus Code supports automatic model switching based on task type:
-- **Strong models** are used for repository exploration, planning, and troubleshooting
-- **Weak models** are used for implementation tasks
+- **Strong models** are used for repository exploration, planning, troubleshooting, and code review
+- **Weak models** are used for implementation and documentation tasks
 
 #### CLI Commands
 ```bash

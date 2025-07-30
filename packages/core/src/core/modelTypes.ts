@@ -13,6 +13,8 @@ export enum TaskType {
   EXPLORATION = 'exploration',
   PLANNING = 'planning',
   TROUBLESHOOTING = 'troubleshooting',
+  REVIEW = 'review',
+  DOCUMENTATION = 'documentation',
   IMPLEMENTATION = 'implementation'
 }
 

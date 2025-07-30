@@ -29,7 +29,7 @@ describe('TaskEvaluationService', () => {
 
   it('should classify exploration tasks correctly', async () => {
     vi.mocked(mockContentGenerator.generateContent).mockResolvedValueOnce({
-      text: () => 'EXPLORATION'
+      text: 'EXPLORATION'
     } as any);
 
     const result = await service.evaluateTaskType(
@@ -43,7 +43,7 @@ describe('TaskEvaluationService', () => {
 
   it('should classify planning tasks correctly', async () => {
     vi.mocked(mockContentGenerator.generateContent).mockResolvedValueOnce({
-      text: () => 'PLANNING'
+      text: 'PLANNING'
     } as any);
 
     const result = await service.evaluateTaskType(
@@ -57,7 +57,7 @@ describe('TaskEvaluationService', () => {
 
   it('should classify troubleshooting tasks correctly', async () => {
     vi.mocked(mockContentGenerator.generateContent).mockResolvedValueOnce({
-      text: () => 'TROUBLESHOOTING'
+      text: 'TROUBLESHOOTING'
     } as any);
 
     const result = await service.evaluateTaskType(
@@ -69,9 +69,37 @@ describe('TaskEvaluationService', () => {
     expect(result).toBe(TaskType.TROUBLESHOOTING);
   });
 
+  it('should classify review tasks correctly', async () => {
+    vi.mocked(mockContentGenerator.generateContent).mockResolvedValueOnce({
+      text: 'REVIEW'
+    } as any);
+
+    const result = await service.evaluateTaskType(
+      'Review this pull request for security issues',
+      [],
+      mockContentGenerator
+    );
+
+    expect(result).toBe(TaskType.REVIEW);
+  });
+
+  it('should classify documentation tasks correctly', async () => {
+    vi.mocked(mockContentGenerator.generateContent).mockResolvedValueOnce({
+      text: 'DOCUMENTATION'
+    } as any);
+
+    const result = await service.evaluateTaskType(
+      'Write API documentation for this endpoint',
+      [],
+      mockContentGenerator
+    );
+
+    expect(result).toBe(TaskType.DOCUMENTATION);
+  });
+
   it('should classify implementation tasks correctly', async () => {
     vi.mocked(mockContentGenerator.generateContent).mockResolvedValueOnce({
-      text: () => 'IMPLEMENTATION'
+      text: 'IMPLEMENTATION'
     } as any);
 
     const result = await service.evaluateTaskType(
@@ -85,7 +113,7 @@ describe('TaskEvaluationService', () => {
 
   it('should default to IMPLEMENTATION on invalid response', async () => {
     vi.mocked(mockContentGenerator.generateContent).mockResolvedValueOnce({
-      text: () => 'INVALID_TASK_TYPE'
+      text: 'INVALID_TASK_TYPE'
     } as any);
 
     const result = await service.evaluateTaskType(
