@@ -36,6 +36,18 @@ npm run build
 npm install -g ./packages/cli
 ```
 
+For development or if you need to rebuild after changes:
+```bash
+# Clean and rebuild everything
+npm run clean
+npm install
+npm run build
+
+# Re-install globally
+npm uninstall -g @samus-code/samus-code
+npm install -g ./packages/cli
+```
+
 Then run from anywhere:
 
 ```bash

@@ -14,7 +14,7 @@ import {
   GoogleGenAI,
 } from '@google/genai';
 import { createCodeAssistContentGenerator } from '../code_assist/codeAssist.js';
-import { DEFAULT_GEMINI_MODEL } from '../config/models.js';
+import { DEFAULT_MODEL } from '../config/models.js';
 import { Config } from '../config/config.js';
 import { getEffectiveModel } from './modelCheck.js';
 import { UserTierId } from '../code_assist/types.js';
@@ -80,8 +80,22 @@ export async function createContentGeneratorConfig(
   const googleCloudLocation = process.env.GOOGLE_CLOUD_LOCATION || undefined;
   const openaiApiKey = process.env.OPENAI_API_KEY;
 
-  // Use runtime model from config if available, otherwise fallback to parameter or default
-  const effectiveModel = model || DEFAULT_GEMINI_MODEL;
+  // Get provider-specific default model
+  function getDefaultModel(authType: AuthType | undefined): string {
+    switch (authType) {
+      case AuthType.USE_OPENAI:
+        return 'qwen/qwen3-coder';
+      case AuthType.USE_OLLAMA:
+        return 'qwen3:32b';
+      case AuthType.USE_LM_STUDIO:
+        return 'qwen/qwq-32b';
+      default:
+        return DEFAULT_MODEL;
+    }
+  }
+
+  // Use runtime model from config if available, otherwise fallback to parameter or provider default
+  const effectiveModel = model || getDefaultModel(authType);
 
   const contentGeneratorConfig: ContentGeneratorConfig = {
     model: effectiveModel,
@@ -119,7 +133,7 @@ export async function createContentGeneratorConfig(
 
   if (authType === AuthType.USE_OPENAI && openaiApiKey) {
     contentGeneratorConfig.apiKey = openaiApiKey;
-    contentGeneratorConfig.model = process.env.OPENAI_MODEL || '';
+    contentGeneratorConfig.model = effectiveModel;
     contentGeneratorConfig.baseUrl = process.env.OPENAI_BASE_URL;
 
     return contentGeneratorConfig;
@@ -127,10 +141,9 @@ export async function createContentGeneratorConfig(
 
   if (authType === AuthType.USE_OLLAMA) {
     const ollamaBaseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
-    const ollamaModel = process.env.OLLAMA_MODEL || model || 'llama3';
     
     return {
-      model: ollamaModel,
+      model: effectiveModel,
       apiKey: 'not-required',
       baseUrl: ollamaBaseUrl,
       authType,
@@ -139,10 +152,9 @@ export async function createContentGeneratorConfig(
 
   if (authType === AuthType.USE_LM_STUDIO) {
     const lmStudioBaseUrl = process.env.LM_STUDIO_BASE_URL || 'http://localhost:1234';
-    const lmStudioModel = process.env.LM_STUDIO_MODEL || model || 'local-model';
     
     return {
-      model: lmStudioModel,
+      model: effectiveModel,
       apiKey: 'not-required',
       baseUrl: lmStudioBaseUrl,
       authType,
