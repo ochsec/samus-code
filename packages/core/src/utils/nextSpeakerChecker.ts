@@ -132,7 +132,6 @@ export async function checkNextSpeaker(
       contents,
       RESPONSE_SCHEMA,
       abortSignal,
-      DEFAULT_FLASH_MODEL,
     )) as unknown as NextSpeakerResponse;
 
     if (
@@ -148,6 +147,38 @@ export async function checkNextSpeaker(
       'Failed to talk to Gemini endpoint when seeing if conversation should continue.',
       error,
     );
-    return null;
+    
+    // For models that don't support JSON mode well, fall back to simple heuristics
+    const lastMessage = curatedHistory[curatedHistory.length - 1];
+    if (lastMessage && lastMessage.role === 'model' && lastMessage.parts) {
+      const lastText = lastMessage.parts
+        .map(part => 'text' in part ? part.text : '')
+        .join(' ')
+        .toLowerCase();
+      
+      // Simple heuristics for when the model should continue
+      const shouldContinue = 
+        lastText.includes('let me') ||
+        lastText.includes("i'll") ||
+        lastText.includes('checking') ||
+        lastText.includes('looking') ||
+        lastText.includes('searching') ||
+        lastText.includes('analyzing') ||
+        lastText.endsWith('...') ||
+        /\b(next|now|then|first|second)\b.*\b(i|let)\b/i.test(lastText);
+      
+      return {
+        reasoning: shouldContinue 
+          ? 'Model appears to be in the middle of a task sequence, continuing.'
+          : 'Model response appears complete, waiting for user.',
+        next_speaker: shouldContinue ? 'model' : 'user',
+      };
+    }
+    
+    // Default fallback
+    return {
+      reasoning: 'Failed to determine next speaker due to API error, defaulting to user input.',
+      next_speaker: 'user',
+    };
   }
 }
