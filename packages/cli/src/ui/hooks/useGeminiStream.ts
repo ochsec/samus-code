@@ -24,7 +24,7 @@ import {
   ThoughtSummary,
   UnauthorizedError,
   UserPromptEvent,
-  DEFAULT_GEMINI_FLASH_MODEL,
+  DEFAULT_FLASH_MODEL,
 } from '@samus-code/samus-code-core';
 import { type Part, type PartListUnion } from '@google/genai';
 import {
@@ -413,7 +413,7 @@ export const useGeminiStream = (
             config.getContentGeneratorConfig()?.authType,
             undefined,
             config.getModel(),
-            DEFAULT_GEMINI_FLASH_MODEL,
+            DEFAULT_FLASH_MODEL,
           ),
         },
         userMessageTimestamp,
@@ -612,7 +612,7 @@ export const useGeminiStream = (
                 config.getContentGeneratorConfig()?.authType,
                 undefined,
                 config.getModel(),
-                DEFAULT_GEMINI_FLASH_MODEL,
+                DEFAULT_FLASH_MODEL,
               ),
             },
             userMessageTimestamp,
