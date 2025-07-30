@@ -25,6 +25,8 @@ import {
   UnauthorizedError,
   UserPromptEvent,
   DEFAULT_FLASH_MODEL,
+  ModelSwitchingService,
+  TaskEvaluationService,
 } from '@samus-code/samus-code-core';
 import { type Part, type PartListUnion } from '@google/genai';
 import {
@@ -109,6 +111,16 @@ export const useGeminiStream = (
       return;
     }
     return new GitService(config.getProjectRoot());
+  }, [config]);
+
+  const modelSwitchingService = useMemo(() => {
+    try {
+      const taskEvaluator = new TaskEvaluationService();
+      return new ModelSwitchingService(taskEvaluator, config, config.getSessionId());
+    } catch (error) {
+      console.warn('Failed to initialize ModelSwitchingService:', getErrorMessage(error));
+      return null;
+    }
   }, [config]);
 
   const [toolCalls, scheduleToolCalls, markToolsAsSubmitted] =
@@ -571,6 +583,35 @@ export const useGeminiStream = (
 
       if (!options?.isContinuation) {
         startNewPrompt();
+      }
+
+      // Auto-switch model based on task type before processing
+      if (modelSwitchingService && !options?.isContinuation) {
+        try {
+          const queryText = Array.isArray(queryToSend) 
+            ? queryToSend.map(part => typeof part === 'string' ? part : part.text || '').join(' ')
+            : typeof queryToSend === 'string' ? queryToSend : queryToSend.text || '';
+          
+          // Get current conversation history - but we need Turn objects, not Content objects
+          // For now we'll pass an empty array since the history conversion is complex
+          const conversationHistory: any[] = []; // TODO: Convert geminiClient.getHistory() to Turn[]
+          const currentConfig = config.getContentGeneratorConfig();
+          const authType = currentConfig?.authType;
+          const currentGenerator = geminiClient.getContentGenerator();
+          
+          if (authType && currentGenerator) {
+            await modelSwitchingService.autoSwitchBasedOnTask(
+              queryText,
+              conversationHistory,
+              authType,
+              currentConfig,
+              currentGenerator
+            );
+          }
+        } catch (error) {
+          console.warn('Model switching failed:', getErrorMessage(error));
+          // Continue with current model if switching fails
+        }
       }
 
       setIsResponding(true);
