@@ -57,7 +57,10 @@ Both servers provide OpenAI-compatible APIs and require no API key. Configure th
 - **Environment Variables**:
   ```bash
   export OLLAMA_BASE_URL="http://localhost:11434"
-  export OLLAMA_MODEL="llama3"
+  
+  # For model switching feature (weak/strong models)
+  export OLLAMA_MODEL_WEAK="llama3.2"
+  export OLLAMA_MODEL_STRONG="llama3.1:70b"
   ```
 - **Prerequisites**:
   - Run the Ollama server: `ollama serve`.
@@ -71,7 +74,10 @@ Both servers provide OpenAI-compatible APIs and require no API key. Configure th
 - **Environment Variables**:
   ```bash
   export LM_STUDIO_BASE_URL="http://localhost:1234"
-  export LM_STUDIO_MODEL="local-model"
+  
+  # For model switching feature (weak/strong models)
+  export LM_STUDIO_MODEL_WEAK="phi-3-mini"
+  export LM_STUDIO_MODEL_STRONG="mixtral-8x7b"
   ```
 - **Prerequisites**:
   - Ensure the LM Studio server is running.
@@ -91,15 +97,46 @@ Currently, the application supports OpenAI-compatible APIs using the following e
 # OpenAI API Configuration
 export OPENAI_API_KEY="your_openai_api_key"
 export OPENAI_BASE_URL="https://api.openai.com/v1"
-export OPENAI_MODEL="gpt-4o"
+
+# For model switching feature (weak/strong models)
+export OPENAI_MODEL_WEAK="claude-3-5-haiku-20241022"
+export OPENAI_MODEL_STRONG="claude-3-5-sonnet-20241022"
+
+# For OpenRouter specifically
+export OPENROUTER_MODEL_WEAK="anthropic/claude-3-5-haiku"
+export OPENROUTER_MODEL_STRONG="anthropic/claude-3-5-sonnet"
 ```
 
 **Notes**:
 - Replace `your_openai_api_key` with your actual OpenAI API key.
 - `OPENAI_BASE_URL` points to the OpenAI API endpoint.
-- `OPENAI_MODEL` specifies the model to use.
-- Ensure you have the necessary permissions and billing setup with OpenAI.
+- For OpenRouter, use the OpenRouter-specific model identifiers.
+- Ensure you have the necessary permissions and billing setup with OpenAI/OpenRouter.
 - Support for other OpenAI-compatible APIs is limited to those that can be configured with these standard OpenAI environment variables.
+
+### Model Switching Feature
+
+Samus Code supports automatic model switching based on task type:
+- **Strong models** are used for repository exploration, planning, and troubleshooting
+- **Weak models** are used for implementation tasks
+
+#### CLI Commands
+```bash
+# Switch to specific model
+> /model llama3.2
+
+# Switch to weak model variant
+> /model weak
+
+# Switch to strong model variant  
+> /model strong
+
+# Enable/disable automatic switching
+> /auto-switch on
+> /auto-switch off
+```
+
+**Note**: The weak/strong model feature requires setting the `_WEAK` and `_STRONG` environment variables for your provider as shown in the configuration sections above.
 
 ## Usage Examples
 
